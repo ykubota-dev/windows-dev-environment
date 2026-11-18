@@ -1,0 +1,14 @@
+# Local execution data and backups (future setup implementation)
+.backups/
+backups/
+logs/
+*.log
+*.bak
+*.tmp
+
+# Local secrets and environment overrides
+.env
+.env.*
+!.env.example
+*.secret
+*.secrets

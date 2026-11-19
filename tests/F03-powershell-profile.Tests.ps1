@@ -1,4 +1,4 @@
-Describe 'F03 PowerShell 7 Profile' {
+﻿Describe 'F03 PowerShell 7 Profile' {
     BeforeAll {
         $script:featurePath = Join-Path $PSScriptRoot '../scripts/features/F03-powershell-profile.ps1'
         . $script:featurePath

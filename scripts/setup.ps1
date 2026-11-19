@@ -85,6 +85,13 @@ foreach ($id in $selected) {
 Write-Host ''
 
 if ($DryRun) {
+    foreach ($id in $selected) {
+        $scriptPath = Join-Path (Join-Path $PSScriptRoot 'features') $featureCatalog[$id].Script
+        if (-not (Test-Path -LiteralPath $scriptPath -PathType Leaf)) {
+            throw "機能スクリプトが存在しません: $scriptPath"
+        }
+        $null = & $scriptPath -DryRun
+    }
     Write-Host 'DryRunが完了しました。変更は行っていません。'
     return
 }

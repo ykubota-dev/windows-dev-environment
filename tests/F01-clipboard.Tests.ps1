@@ -31,6 +31,7 @@
 
     It '状態取得APIが例外を出しても手動操作を案内する' {
         Mock Get-F01ClipboardHistoryState { throw 'API error' }
-        { Invoke-F01ClipboardHistory 6>$null } | Should -Throw '*API error*'
+        $result = Invoke-F01ClipboardHistory 6>$null
+        $result.Status | Should -Be 'ManualRequired'
     }
 }

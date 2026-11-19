@@ -1,48 +1,39 @@
 # 詳細設計書
 
 - 文書ID：DETAIL-001
-- バージョン：0.2
-- 状態：設計段階（各スクリプトは未実装）
+- バージョン：0.3
+- 状態：F01実装済み・基盤改修
 
 ## 1. エントリーポイントとCLI
 
-`scripts/setup.ps1` を唯一のセットアップ起点とする。初版では以下のインターフェースを目標とする（実装までは利用不可）。
+`scripts/setup.ps1` をセットアップ起点とし、登録済みの機能だけを選択できる。
 
-| コマンド | 想定動作 |
+| コマンド | 動作 |
 | --- | --- |
-| `.\\scripts\\setup.ps1` | 対話型機能選択メニュー |
-| `.\\scripts\\setup.ps1 -Features F03,F05` | F03とF05を対象に変更計画を提示 |
-| `.\\scripts\\setup.ps1 -Features All` | F01〜F05を選択 |
-| `.\\scripts\\setup.ps1 -Features F03 -DryRun` | 差分・予定操作のみ表示。書込禁止 |
-| `.\\scripts\\verify.ps1` | 設定状態を検証 |
+| `.\\scripts\\setup.ps1` | 対話型機能選択 |
+| `.\\scripts\\setup.ps1 -Features F01` | F01の確認後に実行 |
+| `.\\scripts\\setup.ps1 -Features All` | 現在登録されている全機能を選択 |
+| `.\\scripts\\setup.ps1 -Features F01 -DryRun` | 変更せず計画を表示 |
+| `.\\scripts\\setup.ps1 -Features F02 -DryRun` | 未登録IDとして拒否 |
 
-入力したFeature IDが未定義の場合は、設定を変更せず入力エラーとする。`-Features`を指定してもユーザー承認は省略しない。非対話環境で承認できない場合は安全側に失敗または未実施として終了する。
+機能IDは実装時に採番する。未実装機能のIDは予約しない。Git AliasとPowerShell Profileは独立した機能とする。
 
-## 2. モジュール分割（実装予定）
+## 2. 機能カタログとモジュール構成
+
+`setup.ps1` の `$featureCatalog` に、機能IDをキーとして `Name`、`Plan`、`Script` を登録する。現在の登録対象はF01のみ。
 
 ```text
 scripts/
-  setup.ps1                   # 選択受付、実行計画、全体制御
-  verify.ps1                  # 適用状態の確認
-  common/
-    backup.ps1                # 変更前バックアップと復元用情報
-    logging.ps1               # 実行結果・エラーログ
+  setup.ps1
   features/
-    F01-clipboard.ps1         # Windowsクリップボード履歴
-    F02-powertoys.ps1         # PowerToys
-    F03-cli.ps1               # PowerShell Profile / Git Alias
-    F04-vscode.ps1            # VS Code Settings Sync
-    F05-winget.ps1            # wingetパッケージ導入
-config/
-  powershell/profile.ps1
-  git/aliases.gitconfig
-  vscode/extensions.txt
-  winget/packages.json
+    F01-clipboard.ps1
+  ci/
 tests/
   setup.Tests.ps1
+  F01-clipboard.Tests.ps1
 ```
 
-Gitは空ディレクトリを追跡しないため、Phase 1では将来の各ディレクトリに `.gitkeep` を配置する。未実装の `setup.ps1` などを実行可能なダミースクリプトとして作らない。
+機能の追加時にスクリプトとメタデータを同時に登録する。機能ID別の実行分岐は作らない。IDが未登録なら実行せずエラーとする。登録されたスクリプトが存在しない場合は当該機能をFailedとし、他の機能を継続する。各スクリプトは `FeatureId`、`Status`、`Message` を返す。実行先は信頼できる固定カタログからのみ取得する。
 
 ## 3. 機能選択と実行順序
 
@@ -53,7 +44,7 @@ Gitは空ディレクトリを追跡しないため、Phase 1では将来の各�
 5. 承認された設定についてバックアップを取る。
 6. 適用後に検証し、各機能の結果を集約する。
 
-F02とF05が同時選択され、PowerToys導入が重複する場合はインストール操作を1件に集約する。依存機能が失敗した場合は、影響を受ける機能のみ未実施または失敗とし、それ以外は継続可能とする。
+将来、同じパッケージの導入が複数の機能で必要になる場合、共通インストール処理で重複を防ぐ。依存機能の失敗は独立機能へ波及させない。
 
 ## 4. 差分提示・確認・適用ルール
 
@@ -92,20 +83,13 @@ F02とF05が同時選択され、PowerToys導入が重複する場合はイン�
 
 ## 5. 機能別仕様
 
-### F01 クリップボード履歴
-Win + V、またはWindows設定の操作案内。現在状態を正しく検出できない端末では推定せず `ManualRequired` を返す。
+### F01 クリップボード履歴（実装済み）
+Win + VまたはWindows設定の操作案内。現在状態を正しく検出できない端末では推定せず `ManualRequired` を返す。
 
-### F02 PowerToys
-`Microsoft.PowerToys` の導入有無を確認し、必要に応じてF05の共通インストール処理を利用。PowerToys Run / FancyZones のGUIでの設定を案内し、内部設定ファイルの直接上書きは行わない。
+### 未実装機能（ID未採番）
+Git Aliasは専用設定ファイルを `include.path` で読み込み、既存のGit設定全体を置き換えない。PowerShell Profileは管理対象ブロックだけを追加・更新し、重複を防ぐ。両機能は独立して実装・選択できるようにする。
 
-### F03 PowerShell Profile / Git Alias
-現在の `$PROFILE` と既存Git設定を確認する。PowerShell Profileには管理対象ブロックを追加・更新し、再実行による重複を防ぐ。Git Aliasは管理専用ファイルを `include.path` 経由で読み込ませ、既存 `.gitconfig` 全体の置換を避ける。競合する既存エイリアスは差分表示時に明示する。
-
-### F04 VS Code
-VS Codeの導入有無を確認する。Settings Syncはユーザー自身が認証・有効化する。拡張機能一覧は将来リポジトリで管理するが、同期結果の確実な検証ができない場合は `ManualRequired` を返す。
-
-### F05 winget
-`config/winget/packages.json` のパッケージIDを読み込み、導入済みかを確認する。未導入項目と操作予定を提示し、承認されたものだけインストールする。強制アップグレード、アンインストールは初版では行わない。パッケージIDは実装時に利用可能性を確認する。
+PowerToys、VS Code Settings Sync、wingetアプリ管理、AutoHotkey、Everythingも未採番とする。具体的な適用方式は各機能の実装PRで定義する。
 
 ## 6. 処理結果とエラー制御
 
@@ -113,9 +97,9 @@ VS Codeの導入有無を確認する。Settings Syncはユーザー自身が認
 
 ```powershell
 [PSCustomObject]@{
-    FeatureId = 'F03'
+    FeatureId = 'F01'
     Status    = 'Success'
-    Message   = 'Git Alias configuration completed'
+    Message   = 'Clipboard history checked'
 }
 ```
 
@@ -132,20 +116,17 @@ VS Codeの導入有無を確認する。Settings Syncはユーザー自身が認
 
 | ID | テスト | 期待 |
 | --- | --- | --- |
-| T01 | F03初回適用 | 承認後に設定作成 |
-| T02 | F03再実行 | 重複なし |
-| T03 | F03で既存設定あり | 承認後にバックアップ |
-| T04 | DryRun | ファイル、設定、パッケージに変更なし |
-| T05 | 不明なFeature ID | 入力エラー |
-| T06 | wingetが利用不可 | 失敗理由が表示される |
-| T07 | F02とF05同時選択 | 同一インストールは1回 |
-| T08 | 一部機能のみ失敗 | 独立機能を継続し結果集約 |
-| T09 | 差分提示後にファイル内容が変化 | 再確認・再承認 |
-| T10 | Enterのみで承認を試行 | 適用されない |
-| T11 | バックアップ失敗 | 元ファイルは変更されない |
+| T01 | F01のDryRun | 書き込みなし・計画表示 |
+| T02 | All | 登録済みのF01だけを選択 |
+| T03 | 未登録ID（F02など） | 入力エラー |
+| T04 | 不明なFeature ID | 入力エラー |
+| T05 | Allと個別IDの混在 | 入力エラー |
+| T06 | Enterのみの承認 | 適用されない |
+| T07 | 機能スクリプトの欠損・不正な結果 | 当該機能はFailed |
+| T08 | 将来の設定変更機能 | 差分・再承認・バックアップ・冪等性を個別にテスト |
 
 テストにはPesterを想定し、実環境を変更する処理はモック化する。Windows上での結合確認は実装後に実施する。
 
 ## 8. Git運用・作業範囲
 
-`main` は安定版、短命な `develop/<機能名>` ブランチでPRを作成する。Phase 1ではドキュメントとディレクトリプレースホルダーのみを追加し、セットアップ機能は次フェーズで実装する。
+`main` を安定版とし、`develop/<機能名>` ブランチからPRを作る。機能IDは実装時に採番し、`setup.ps1` へ登録する。未実装機能の予約IDは使用しない。

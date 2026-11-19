@@ -30,9 +30,12 @@ function Invoke-F02GitAlias {
     $globalFingerprint = Get-FileFingerprint -Path $GitConfigPath
     $managedFingerprint = Get-FileFingerprint -Path $ManagedConfigPath
 
-    $existingIncludes = @(& git config --file $GitConfigPath --get-all include.path 2>$null)
-    if ($LASTEXITCODE -gt 1) {
-        throw '既存のGit設定を読み取れませんでした。'
+    $existingIncludes = @()
+    if ($globalFingerprint -ne 'MISSING') {
+        $existingIncludes = @(& git config --file $GitConfigPath --get-all include.path 2>$null)
+        if ($LASTEXITCODE -gt 1) {
+            throw '既存のGit設定を読み取れませんでした。'
+        }
     }
     $hasInclude = @($existingIncludes | Where-Object { $_ -eq $ManagedConfigPath }).Count -gt 0
     $managedContent = if ($managedFingerprint -ne 'MISSING') {
@@ -47,6 +50,7 @@ function Invoke-F02GitAlias {
 
     $aliasNames = @('st', 'co', 'br', 'lg')
     foreach ($name in $aliasNames) {
+        if ($globalFingerprint -eq 'MISSING') { continue }
         $existing = @(& git config --file $GitConfigPath --get-all "alias.$name" 2>$null)
         if ($LASTEXITCODE -gt 1) {
             throw "既存のGit Aliasを確認できません: $name"

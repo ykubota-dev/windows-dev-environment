@@ -2,8 +2,8 @@
 
 - 文書ID：BASIC-001
 - 対象：windows-dev-environment
-- バージョン：0.2
-- 状態：初版確定（Phase 1）
+- バージョン：0.3
+- 状態：基盤改修・F01実装済み
 - 対象OS：Windows 11
 
 ## 1. 背景と目的
@@ -12,35 +12,25 @@
 
 ## 2. 対象範囲
 
-| ID | 機能 | 初版対応 | 適用方式 |
+| ID | 機能 | 現在の状態 | 適用方式 |
 | --- | --- | --- | --- |
-| F01 | クリップボード履歴 | 対応 | 状態確認とGUI操作案内 |
-| F02 | PowerToys Run / FancyZones | 対応 | 導入とGUI設定案内 |
-| F03 | PowerShell Profile / Git Alias | 対応 | ファイル差分承認後の適用 |
-| F04 | VS Code Settings Sync | 対応 | インストール確認と認証・同期案内 |
-| F05 | wingetアプリ管理 | 対応 | インストール予定承認後の適用 |
-| F06 | AutoHotkey | 将来 | 対象外 |
-| F07 | Everything | 将来 | 対象外 |
+| F01 | クリップボード履歴 | 実装済み | 状態確認とGUI操作案内 |
+
+未実装の機能候補：Git Alias、PowerShell Profile、PowerToys、VS Code Settings Sync、wingetアプリ管理、AutoHotkey、Everything。未実装機能にはIDを予約しない。機能の実装時に次の連番を割り当て、既存IDは原則変更しない。Git AliasとPowerShell Profileは独立した設定対象として分ける。
 
 Microsoft IME辞書は別リポジトリで管理する。Windows以外のOS、秘密情報の同期、既存アプリの強制更新・削除は対象外。
 
 ## 3. 構成
 
 ```text
-GitHub / windows-dev-environment (Public)
-    └─ scripts/setup.ps1 [Phase 2で実装]
-         ├─ 事前チェック・機能選択
-         ├─ 変更計画・差分表示・承認
-         ├─ バックアップ・機能適用
-         └─ 結果集約・検証
-              ├─ F01 Windows
-              ├─ F02 PowerToys
-              ├─ F03 PowerShell / Git
-              ├─ F04 VS Code
-              └─ F05 winget
+scripts/setup.ps1
+    ├─ 登録済み機能の選択と承認
+    ├─ メタデータ（Name / Plan / Script）
+    └─ scripts/features/
+         └─ F01-clipboard.ps1
 ```
 
-制御処理と機能固有の処理を分離する。機能ごとに独立した適用・検証処理を持つ。GUI操作が必要なものは手動作業として明示する。
+機能追加時は機能スクリプトを作成し、`setup.ps1` の機能カタログへ登録する。実行先をID別のswitch文で増やさず、登録されたScriptから解決する。実行前に登録IDとファイル存在を確認する。差分表示・バックアップ等は今後の設定変更機能で導入する。
 
 ## 4. 運用方式
 
@@ -66,11 +56,11 @@ GitHub / windows-dev-environment (Public)
 
 ## 6. 開発フェーズ
 
-1. **Phase 1 / 基盤：** README、LICENSE確認、設計書、導入ガイド、初期ディレクトリ。
-2. **Phase 2 / セットアップ制御・CLI：** 機能選択、差分確認、バックアップ、PowerShell/Git、winget。
-3. **Phase 3 / GUI：** クリップボード履歴、PowerToys、VS Code。
-4. **Phase 4 / 拡張：** AutoHotkey、Everything。
+1. 基盤・CIの構築およびF01の状態確認・操作案内は実装済み。
+2. メタデータ駆動の機能登録を導入し、未実装機能の予約IDを廃止する。
+3. Git Alias、PowerShell Profileを別々の機能として順次実装する。
+4. その他の機能は必要性と優先度に応じて採番・実装する。
 
 ## 7. Git運用
 
-`main` は安定版。 `develop/project-foundation` からのPRを経て、以後は最新`main`から `develop/setup-controller`、`develop/powershell-git`、`develop/winget-installer`、`develop/powertoys`、`develop/windows-clipboard`、`develop/vscode-settings` 等の作業ブランチを作る。マージはリポジトリ所有者が行う。
+`main` は安定版。機能ごとの `develop/<feature-name>` ブランチからPRを作る。マージはリポジトリ所有者が行う。

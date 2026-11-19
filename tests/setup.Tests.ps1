@@ -14,16 +14,24 @@
         $output = & $script:setupPath -Features All -DryRun 6>&1 | Out-String
         $output | Should -Match '\[F01\]'
         $output | Should -Match '\[F02\]'
+        $output | Should -Match '\[F03\]'
+        $planMatch = [regex]::Match($output, '(?ms)=== 実行予定の内容 ===\r?\n(.*?)\r?\n[ \t]*\r?\n')
+        $planMatch.Success | Should -BeTrue
+        $featureMatches = [regex]::Matches($planMatch.Groups[1].Value, '(?m)^\[(F0[1-3])\]')
+        @($featureMatches | ForEach-Object { $_.Groups[1].Value }) -join ',' | Should -Be 'F01,F02,F03'
     }
 
     It 'rejects the next unimplemented feature ID' {
-        { & $script:setupPath -Features F03 -DryRun 6>&1 } | Should -Throw '*不明な機能ID*'
+        { & $script:setupPath -Features F04 -DryRun 6>&1 } | Should -Throw '*不明な機能ID*'
     }
 
     It 'shows only registered features in the selection menu' {
         $output = & $script:setupPath -Features F01 -DryRun 6>&1 | Out-String
         $output | Should -Match 'F01  クリップボード履歴'
         $output | Should -Match 'F02  Git Alias'
+        $output | Should -Match 'F03  PowerShell Profile'
+        $menu = [regex]::Matches($output, '(?m)^(F0[1-3])  ')
+        @($menu | ForEach-Object { $_.Groups[1].Value }) -join ',' | Should -Be 'F01,F02,F03'
     }
 
     It 'rejects unrecognized feature IDs' {

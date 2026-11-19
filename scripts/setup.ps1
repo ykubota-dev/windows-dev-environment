@@ -18,6 +18,11 @@ $featureCatalog = [ordered]@{
         Plan = 'Git Aliasの既存設定を確認し、承認後に専用設定ファイルとinclude.pathを適用します。'
         Script = 'F02-git-alias.ps1'
     }
+    F03 = @{
+        Name = 'PowerShell Profile'
+        Plan = 'PowerShell 7のProfileに独自関数8個を安全に登録します。'
+        Script = 'F03-powershell-profile.ps1'
+    }
 }
 
 function Resolve-FeatureSelection {
@@ -145,4 +150,4 @@ Write-Host '=== 確認結果 ==='
 foreach ($result in $results) {
     Write-Host ("{0}: {1} - {2}" -f $result.FeatureId, $result.Status, $result.Message)
 }
-Write-Host '変更は行っていません。'
+Write-Host '各機能の実行結果を確認してください。'

@@ -56,3 +56,20 @@ Invoke-Pester -Path .\tests -CI
 - JSONまたはPowerShell構文が不正なら失敗する
 - 静的解析またはPesterの失敗はPRに反映される
 - CIは開発PCのレジストリ・PowerShell Profile・wingetパッケージを変更しない
+
+## PowerShellファイルの文字コード規約
+
+- **日本語など非ASCII文字を含む `.ps1` / `.psm1` / `.psd1` はUTF-8 BOM付きで保存する。** PSScriptAnalyzerの `PSUseBOMForUnicodeEncodedFile` 警告を防ぐため。
+- BOMはファイル先頭の3バイト `EF BB BF`。PowerShell 7がBOMなしUTF-8を読めることと、CIの静的解析規約は別問題。
+- 新規ファイル作成時だけでなく、GitHub APIなどを利用した自動生成・更新時にも文字コードを確認する。
+- 文字コード以外のWarningもCI失敗になるため、`PSReviewUnusedParameter` などはコード側で解消する。
+
+PowerShell 7での修正例：
+
+```powershell
+$path = './scripts/features/F03-powershell-profile.ps1'
+$content = [System.IO.File]::ReadAllText((Resolve-Path $path).Path)
+[System.IO.File]::WriteAllText((Resolve-Path $path).Path, $content, [System.Text.UTF8Encoding]::new($true))
+```
+
+**PR前チェック：** `Invoke-ScriptAnalyzer -Path ./scripts -Recurse -Severity Error,Warning` および `Invoke-ScriptAnalyzer -Path ./tests -Recurse -Severity Error,Warning` が空であることを確認する。

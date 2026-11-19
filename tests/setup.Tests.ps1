@@ -7,7 +7,7 @@
         $output = & $script:setupPath -Features F01 -DryRun 6>&1 | Out-String
         $output | Should -Match '\[F01\]'
         $output | Should -Match 'DryRunが完了しました'
-        $output | Should -Match '\[F02\]'
+        $output | Should -Not -Match '\[F02\]'
     }
 
     It 'supports All in catalog order' {

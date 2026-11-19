@@ -1,0 +1,60 @@
+name: PowerShell CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: PowerShell quality
+    runs-on: windows-latest
+    timeout-minutes: 15
+
+    defaults:
+      run:
+        shell: pwsh
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install and import quality tools
+        run: |
+          $ErrorActionPreference = 'Stop'
+          Install-Module -Name PSScriptAnalyzer -RequiredVersion 1.25.0 -Scope CurrentUser -Force
+          Install-Module -Name Pester -RequiredVersion 5.9.0 -Scope CurrentUser -Force -SkipPublisherCheck
+          Import-Module PSScriptAnalyzer -RequiredVersion 1.25.0 -Force
+          Import-Module Pester -RequiredVersion 5.9.0 -Force
+
+      - name: Validate PowerShell and JSON syntax
+        run: |
+          ./scripts/ci/validate-repository.ps1 -Root .
+
+      - name: PSScriptAnalyzer
+        run: |
+          $ErrorActionPreference = 'Stop'
+          Import-Module PSScriptAnalyzer -RequiredVersion 1.25.0 -Force
+          $issues = @(
+            Invoke-ScriptAnalyzer -Path ./scripts -Recurse -Severity Error,Warning
+            Invoke-ScriptAnalyzer -Path ./tests -Recurse -Severity Error,Warning
+          )
+          if ($issues.Count -gt 0) {
+            $issues | Format-Table ScriptName, Line, RuleName, Severity, Message -Wrap
+            throw "PSScriptAnalyzer found $($issues.Count) issue(s)."
+          }
+          Write-Host 'PSScriptAnalyzer passed.'
+
+      - name: Pester unit tests
+        run: |
+          $ErrorActionPreference = 'Stop'
+          Import-Module Pester -RequiredVersion 5.9.0 -Force
+          Invoke-Pester -Path ./tests -CI

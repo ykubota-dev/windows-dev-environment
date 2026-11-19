@@ -2,9 +2,9 @@
 
 Windows 11の開発環境を、**機能ごとに選択して安全にセットアップ・再現する**ための公開リポジトリです。
 
-> **現在の状態：設計完了・CI基盤構築中**
+> **現在の状態：F01（クリップボード履歴）の状態確認・操作案内に対応**
 >
-> このブランチにはCIワークフローと検証スクリプトを含みます。**Windows環境を変更するセットアップスクリプトは未実装です。** CIが実際に成功したかどうかはPull RequestのActions結果を確認してください。
+> 未実装の機能はIDを予約せず、実装時に採番・登録します。
 
 ## 目的
 
@@ -13,17 +13,15 @@ Windows 11の開発環境を、**機能ごとに選択して安全にセット�
 - 設定と変更理由をGitで追跡可能にする
 - 既存環境を保護し、適用前に差分を確認できるようにする
 
-## 対応機能（計画）
+## 対応機能
 
-| ID | 機能 | 初版の方式 |
+| ID | 機能 | 状態 |
 | --- | --- | --- |
-| F01 | Windowsクリップボード履歴（Win + V） | 状態確認・手動設定案内 |
-| F02 | PowerToys Run / FancyZones | wingetで導入、GUI設定案内 |
-| F03 | PowerShell Profile / Git Alias | 差分承認後に設定を適用 |
-| F04 | VS Code Settings Sync | VS Code確認・手動同期案内 |
-| F05 | wingetパッケージ管理 | インストール予定を確認して導入 |
-| F06 | AutoHotkey | 将来対応 |
-| F07 | Everything | 将来対応 |
+| F01 | Windowsクリップボード履歴（Win + V） | 実装済み（状態確認・手動設定案内） |
+
+今後の実装候補（未採番）：Git Alias、PowerShell Profile、PowerToys Run / FancyZones、VS Code Settings Sync、wingetパッケージ管理、AutoHotkey、Everything。
+
+機能IDは実装時に連番で割り当て、既存IDは原則変更しません。Git AliasとPowerShell Profileは独立した機能として実装します。
 
 Microsoft IMEの辞書は独立した `engineer-ime-dictionary` リポジトリで管理し、ここでは重複して収録しません。
 
@@ -37,12 +35,13 @@ Microsoft IMEの辞書は独立した `engineer-ime-dictionary` リポジトリ�
 
 ## CI（継続的インテグレーション）
 
-`.github/workflows/ci.yml` で、`main` 向けPRおよび `main` へのpush時にWindowsランナー上の検証を実施します。
+`.github/workflows/ci.yml` で、`main` 向けPRおよび `main` / `develop/**` へのpush時にWindowsランナー上の検証を実施します。
 
 | チェック | 内容 |
 | --- | --- |
 | PowerShell構文 | `.ps1`, `.psm1`, `.psd1` のパースエラー |
 | JSON構文 | `.json` ファイルの解析エラー |
+| コメント禁止Lint | 通常コメントは禁止。安全上の理由を記述する `SAFETY:` のみ許容 |
 | PSScriptAnalyzer | `scripts/`、`tests/` のError/Warning |
 | Pester | `tests/` 配下の単体テスト |
 
@@ -50,19 +49,14 @@ CIはPC設定の変更やアプリの導入を行いません。利用方法と�
 
 ## 導入・利用方法
 
-現段階ではドキュメントの確認とCI検証のみ可能です。詳細は [セットアップガイド](docs/setup-guide.md) を参照してください。
-
-実装後に提供する予定のコマンド（**現時点では実行不可**）：
+現在はF01の状態確認とGUI操作案内が利用できます。
 
 ```powershell
-# リポジトリのルートから
-.\scripts\setup.ps1
-.\scripts\setup.ps1 -Features F03,F05
-.\scripts\setup.ps1 -Features F03 -DryRun
-.\scripts\verify.ps1
+.\scripts\setup.ps1 -Features F01 -DryRun
+.\scripts\setup.ps1 -Features F01
 ```
 
-実装後も、`-Features` 指定だけで確認を省略することはありません。
+`-Features` を指定しても機能ごとの確認は省略しません。将来の機能は実装時にカタログへ追加します。
 
 ## ドキュメント
 
@@ -73,7 +67,7 @@ CIはPC設定の変更やアプリの導入を行いません。利用方法と�
 
 ## 開発フロー
 
-`main` を安定版とし、`develop/<feature-name>` の短命ブランチからPull Requestで変更します。常設の`develop` ブランチは置きません。初期基盤は `develop/project-foundation`、CIは `develop/ci-pipeline`、次のセットアップ基盤は `develop/setup-controller` で実装します。
+`main` を安定版とし、`develop/<feature-name>` からPRで変更します。実装時に機能IDを採番し、`scripts/setup.ps1` の機能カタログへ追加します。
 
 ## ライセンス
 

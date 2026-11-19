@@ -10,11 +10,11 @@
 
 | コマンド | 動作 |
 | --- | --- |
-| `.\\scripts\\setup.ps1` | 対話型機能選択 |
-| `.\\scripts\\setup.ps1 -Features F01` | F01の確認後に実行 |
-| `.\\scripts\\setup.ps1 -Features All` | 現在登録されている全機能を選択 |
-| `.\\scripts\\setup.ps1 -Features F01 -DryRun` | 変更せず計画を表示 |
-| `.\\scripts\\setup.ps1 -Features F02 -DryRun` | 未登録IDとして拒否 |
+| `.\scripts\setup.ps1` | 対話型機能選択 |
+| `.\scripts\setup.ps1 -Features F01` | F01の確認後に実行 |
+| `.\scripts\setup.ps1 -Features All` | 現在登録されている全機能を選択 |
+| `.\scripts\setup.ps1 -Features F01 -DryRun` | 変更せず計画を表示 |
+| `.\scripts\setup.ps1 -Features F02 -DryRun` | 未登録IDとして拒否 |
 
 機能IDは実装時に採番する。未実装機能のIDは予約しない。Git AliasとPowerShell Profileは独立した機能とする。
 
@@ -37,12 +37,12 @@ tests/
 
 ## 3. 機能選択と実行順序
 
-1. OS、PowerShell、`winget`、Git、権限・制約を確認する。
+1. 選択した登録済み機能の実行計画を表示する（機能固有の事前チェックは各機能で行う）。
 2. 対象機能を複数選択する（CLI引数指定時はその値を使う）。
-3. 機能の依存関係を解決し、変更計画を生成する。
+3. 登録済みカタログの順序で対象スクリプトを解決する。
 4. 差分・操作予定・必要な権限を表示し、機能単位で確認する。
-5. 承認された設定についてバックアップを取る。
-6. 適用後に検証し、各機能の結果を集約する。
+5. 変更を伴う機能では、実装時にバックアップ処理を追加する。
+6. 各機能の結果を検証して集約する。
 
 将来、同じパッケージの導入が複数の機能で必要になる場合、共通インストール処理で重複を防ぐ。依存機能の失敗は独立機能へ波及させない。
 

@@ -10,7 +10,7 @@ param(
 $ErrorActionPreference = 'Stop'
 
 $featureCatalog = [ordered]@{
-    F01 = @{ Name = 'クリップボード履歴'; Plan = 'Windowsの設定画面でクリップボード履歴を有効にします（現段階では手動操作）。' }
+    F01 = @{ Name = 'クリップボード履歴'; Plan = '現在状態を確認し、必要ならWindowsのGUI操作を案内します（自動変更なし）。' }
     F02 = @{ Name = 'PowerToys'; Plan = 'PowerToysの導入状況を確認し、Run / FancyZonesを設定します（現段階では手動操作）。' }
     F03 = @{ Name = 'PowerShell / Git エイリアス'; Plan = 'PowerShellプロファイルとGitエイリアスの変更予定を確認します。' }
     F04 = @{ Name = 'VS Code 設定同期'; Plan = 'VS Codeの設定同期を有効にします（現段階では手動操作）。' }
@@ -51,7 +51,7 @@ function Resolve-FeatureSelection {
 }
 
 Write-Host '=== Windows開発環境セットアップ ==='
-Write-Host 'プレビュー版：Windowsの設定変更、ファイル変更、パッケージ導入は行いません。'
+Write-Host 'F01は状態確認と操作案内に対応しています。Windows設定やファイルの変更、パッケージ導入は行いません。'
 Write-Host ''
 
 foreach ($id in $featureCatalog.Keys) {
@@ -77,7 +77,8 @@ Write-Host '=== 実行予定の内容 ==='
 foreach ($id in $selected) {
     Write-Host ("[{0}] {1}" -f $id, $featureCatalog[$id].Name)
     Write-Host ("  予定: {0}" -f $featureCatalog[$id].Plan)
-    Write-Host '  状態: 未実装（プレビューのみ）'
+    if ($id -eq 'F01') { Write-Host '  状態: 状態確認・操作案内に対応' }
+    else { Write-Host '  状態: 未実装（プレビューのみ）' }
 }
 Write-Host ''
 
@@ -91,11 +92,27 @@ foreach ($id in $selected) {
     $decision = (Read-Host "[$id] 実行予定を確認しましたか？ [Yes: 確認 / Skip: スキップ / Cancel: 全体中止]").Trim()
     switch -Regex ($decision) {
         '^(?i:yes|y)$' {
-            $results.Add([pscustomobject]@{
-                    FeatureId = $id
-                    Status = 'ManualRequired'
-                    Message = '機能の適用処理は未実装です。変更は行っていません。'
-                })
+            if ($id -eq 'F01') {
+                $featureScript = Join-Path $PSScriptRoot 'features/F01-clipboard.ps1'
+                try {
+                    $featureResult = & $featureScript
+                    $results.Add($featureResult)
+                }
+                catch {
+                    $results.Add([pscustomobject]@{
+                            FeatureId = $id
+                            Status = 'Failed'
+                            Message = "F01の実行に失敗しました: $($_.Exception.Message)"
+                        })
+                }
+            }
+            else {
+                $results.Add([pscustomobject]@{
+                        FeatureId = $id
+                        Status = 'ManualRequired'
+                        Message = '機能の適用処理は未実装です。変更は行っていません。'
+                    })
+            }
             break
         }
         '^(?i:cancel|c)$' {

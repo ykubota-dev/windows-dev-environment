@@ -29,3 +29,7 @@ Invoke-Pester -Path ./tests/setup.Tests.ps1 -CI
 ```
 
 The repository's Windows GitHub Actions CI runs the Pester tests and PowerShell static analysis. This phase is not an integration test of real Windows settings.
+
+## 表示言語と操作
+
+受付画面・実行予定・結果メッセージは日本語で表示します。CLI引数（`-Features`、`-DryRun`）、機能ID、選択入力（`All`、`Cancel`、`Yes`、`Skip`）は互換性のため英語のまま維持します。`Yes` はプレビュー内容の確認のみを意味し、設定変更は行いません。`Skip` は当該機能を飛ばし、`Cancel` は残りの処理を中止します。

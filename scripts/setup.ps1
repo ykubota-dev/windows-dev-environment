@@ -47,14 +47,14 @@ function Resolve-FeatureSelection {
     return @($Catalog.Keys | Where-Object { $tokens -contains $_ })
 }
 
-Write-Host '=== Windows Development Environment Setup ==='
-Write-Host 'Controller preview: no Windows settings, files, or packages will be changed.'
-Write-Host ''
+Write-Output '=== Windows Development Environment Setup ==='
+Write-Output 'Controller preview: no Windows settings, files, or packages will be changed.'
+Write-Output ''
 
 foreach ($id in $featureCatalog.Keys) {
-    Write-Host ("{0}  {1}" -f $id, $featureCatalog[$id].Name)
+    Write-Output ("{0}  {1}" -f $id, $featureCatalog[$id].Name)
 }
-Write-Host ''
+Write-Output ''
 
 if (-not $Features -or $Features.Count -eq 0) {
     if ($DryRun) {
@@ -64,22 +64,22 @@ if (-not $Features -or $Features.Count -eq 0) {
 }
 
 if ($Features.Count -eq 1 -and $Features[0].Trim() -match '^(?i:cancel)$') {
-    Write-Host 'Cancelled. No changes made.'
+    Write-Output 'Cancelled. No changes made.'
     return
 }
 
 $selected = @(Resolve-FeatureSelection -Requested $Features -Catalog $featureCatalog)
 
-Write-Host '=== Planned operations ==='
+Write-Output '=== Planned operations ==='
 foreach ($id in $selected) {
-    Write-Host ("[{0}] {1}" -f $id, $featureCatalog[$id].Name)
-    Write-Host ("  Plan: {0}" -f $featureCatalog[$id].Plan)
-    Write-Host '  State: Not implemented (preview only)'
+    Write-Output ("[{0}] {1}" -f $id, $featureCatalog[$id].Name)
+    Write-Output ("  Plan: {0}" -f $featureCatalog[$id].Plan)
+    Write-Output '  State: Not implemented (preview only)'
 }
-Write-Host ''
+Write-Output ''
 
 if ($DryRun) {
-    Write-Host 'DryRun complete. No changes made.'
+    Write-Output 'DryRun complete. No changes made.'
     return
 }
 
@@ -96,7 +96,7 @@ foreach ($id in $selected) {
             break
         }
         '^(?i:cancel|c)$' {
-            Write-Host 'Cancelled. Remaining features were not processed.'
+            Write-Output 'Cancelled. Remaining features were not processed.'
             break
         }
         default {
@@ -113,8 +113,8 @@ foreach ($id in $selected) {
     }
 }
 
-Write-Host '=== Results ==='
+Write-Output '=== Results ==='
 foreach ($result in $results) {
-    Write-Host ("{0}: {1} - {2}" -f $result.FeatureId, $result.Status, $result.Message)
+    Write-Output ("{0}: {1} - {2}" -f $result.FeatureId, $result.Status, $result.Message)
 }
-Write-Host 'No changes made.'
+Write-Output 'No changes made.'

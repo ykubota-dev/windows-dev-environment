@@ -1,4 +1,4 @@
-Describe 'Setup controller (preview only)' {
+﻿Describe 'Setup controller (preview only)' {
     BeforeAll {
         $script:setupPath = Join-Path $PSScriptRoot '../scripts/setup.ps1'
     }

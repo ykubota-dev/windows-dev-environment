@@ -2,7 +2,7 @@
 
 ## 1. 現在の提供状況
 
-F01（クリップボード履歴）の状態確認とGUI操作案内を提供しています。その他の機能は未実装で、機能IDを予約していません。
+F01（クリップボード履歴）とF02（Git Alias）を提供しています。その他の機能は未実装で、機能IDを予約していません。
 
 ## 2. 事前条件
 
@@ -38,10 +38,12 @@ Get-ChildItem
 ```powershell
 .\scripts\setup.ps1 -Features F01 -DryRun
 .\scripts\setup.ps1 -Features F01
+.\scripts\setup.ps1 -Features F02 -DryRun
+.\scripts\setup.ps1 -Features F02
 .\scripts\setup.ps1 -Features All -DryRun
 ```
 
-現在、AllはF01だけを対象とします。未実装機能のIDは指定できません。通常実行では機能ごとに明示的な承認が必要で、Enterだけでは承認されません。DryRunでは書き込みを行いません。
+現在、AllはF01とF02を対象とします。未実装機能のIDは指定できません。通常実行では機能ごとに明示的な承認が必要で、Enterだけでは承認されません。DryRunでは書き込みを行いません。
 
 ## 5. セキュリティ・注意事項
 

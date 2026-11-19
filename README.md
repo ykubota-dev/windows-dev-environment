@@ -18,8 +18,9 @@ Windows 11の開発環境を、**機能ごとに選択して安全にセット�
 | ID | 機能 | 状態 |
 | --- | --- | --- |
 | F01 | Windowsクリップボード履歴（Win + V） | 実装済み（状態確認・手動設定案内） |
+| F02 | Git Alias | 実装済み（差分確認・承認・バックアップ） |
 
-今後の実装候補（未採番）：Git Alias、PowerShell Profile、PowerToys Run / FancyZones、VS Code Settings Sync、wingetパッケージ管理、AutoHotkey、Everything。
+今後の実装候補（未採番）：PowerShell Profile、PowerToys Run / FancyZones、VS Code Settings Sync、wingetパッケージ管理、AutoHotkey、Everything。
 
 機能IDは実装時に連番で割り当て、既存IDは原則変更しません。Git AliasとPowerShell Profileは独立した機能として実装します。
 
@@ -54,6 +55,8 @@ CIはPC設定の変更やアプリの導入を行いません。利用方法と�
 ```powershell
 .\scripts\setup.ps1 -Features F01 -DryRun
 .\scripts\setup.ps1 -Features F01
+.\scripts\setup.ps1 -Features F02 -DryRun
+.\scripts\setup.ps1 -Features F02
 ```
 
 `-Features` を指定しても機能ごとの確認は省略しません。将来の機能は実装時にカタログへ追加します。

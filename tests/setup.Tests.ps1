@@ -13,17 +13,17 @@
     It 'supports All in catalog order' {
         $output = & $script:setupPath -Features All -DryRun 6>&1 | Out-String
         $output | Should -Match '\[F01\]'
-        $output | Should -Not -Match '\[F02\]'
+        $output | Should -Match '\[F02\]'
     }
 
-    It 'rejects reserved feature IDs that are not yet implemented' {
-        { & $script:setupPath -Features F02 -DryRun 6>&1 } | Should -Throw '*不明な機能ID*'
+    It 'rejects the next unimplemented feature ID' {
+        { & $script:setupPath -Features F03 -DryRun 6>&1 } | Should -Throw '*不明な機能ID*'
     }
 
     It 'shows only registered features in the selection menu' {
         $output = & $script:setupPath -Features F01 -DryRun 6>&1 | Out-String
         $output | Should -Match 'F01  クリップボード履歴'
-        $output | Should -Not -Match 'F02  '
+        $output | Should -Match 'F02  Git Alias'
     }
 
     It 'rejects unrecognized feature IDs' {

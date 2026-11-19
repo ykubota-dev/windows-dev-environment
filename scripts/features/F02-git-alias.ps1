@@ -50,7 +50,7 @@ function Invoke-F02GitAlias {
 
     $aliasNames = @('st', 'co', 'br', 'lg')
     foreach ($name in $aliasNames) {
-        if ($globalFingerprint -eq 'MISSING') { continue }
+        if ($globalFingerprint -eq 'MISSING' -or $hasInclude) { continue }
         $existing = @(& git config --file $GitConfigPath --get-all "alias.$name" 2>$null)
         if ($LASTEXITCODE -gt 1) {
             throw "既存のGit Aliasを確認できません: $name"

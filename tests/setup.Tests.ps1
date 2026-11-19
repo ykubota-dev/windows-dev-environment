@@ -15,8 +15,9 @@
         $output | Should -Match '\[F01\]'
         $output | Should -Match '\[F02\]'
         $output | Should -Match '\[F03\]'
-        $planSection = ($output -split '=== 実行予定の内容 ===', 2)[1]
-        $featureMatches = [regex]::Matches($planSection, '(?m)^\[(F0[1-3])\]')
+        $planMatch = [regex]::Match($output, '(?ms)=== 実行予定の内容 ===\r?\n(.*?)\r?\n[ \t]*\r?\n')
+        $planMatch.Success | Should -BeTrue
+        $featureMatches = [regex]::Matches($planMatch.Groups[1].Value, '(?m)^\[(F0[1-3])\]')
         @($featureMatches | ForEach-Object { $_.Groups[1].Value }) -join ',' | Should -Be 'F01,F02,F03'
     }
 

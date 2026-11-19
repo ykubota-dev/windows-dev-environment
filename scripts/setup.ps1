@@ -13,15 +13,15 @@ $featureCatalog = [ordered]@{
         Plan = '現在状態を確認し、必要ならWindowsのGUI操作を案内します（自動変更なし）。'
         Script = 'F01-clipboard.ps1'
     }
-    F03 = @{
-        Name = 'PowerShell Profile'
-        Plan = 'PowerShell 7のProfileに独自関数8個を安全に登録します。'
-        Script = 'F03-powershell-profile.ps1'
-    }
     F02 = @{
         Name = 'Git Alias'
         Plan = 'Git Aliasの既存設定を確認し、承認後に専用設定ファイルとinclude.pathを適用します。'
         Script = 'F02-git-alias.ps1'
+    }
+    F03 = @{
+        Name = 'PowerShell Profile'
+        Plan = 'PowerShell 7のProfileに独自関数8個を安全に登録します。'
+        Script = 'F03-powershell-profile.ps1'
     }
 }
 

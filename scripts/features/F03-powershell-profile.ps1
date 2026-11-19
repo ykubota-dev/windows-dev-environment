@@ -1,4 +1,4 @@
-[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '', Justification = 'Interactive installation displays its plan and approval prompt.')]
+﻿[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '', Justification = 'Interactive installation displays its plan and approval prompt.')]
 [CmdletBinding()]
 param(
     [switch]$DryRun,
@@ -40,7 +40,8 @@ function Invoke-F03PowerShellProfile {
     }
     else {
         $pattern = '(?s)' + [regex]::Escape($startMarker) + '.*?' + [regex]::Escape($endMarker)
-        [regex]::Replace($profileContent, $pattern, [System.Text.RegularExpressions.MatchEvaluator]{ param($match) $block })
+        $match = [regex]::Match($profileContent, $pattern)
+        $profileContent.Substring(0, $match.Index) + $block + $profileContent.Substring($match.Index + $match.Length)
     }
 
     $changes = [System.Collections.Generic.List[object]]::new()

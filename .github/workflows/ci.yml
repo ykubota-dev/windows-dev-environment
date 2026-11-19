@@ -7,6 +7,7 @@ on:
     branches:
       - main
       - 'develop/**'
+      - 'deveop/**'
 
 permissions:
   contents: read
@@ -40,6 +41,10 @@ jobs:
       - name: Validate PowerShell and JSON syntax
         run: |
           ./scripts/ci/validate-repository.ps1 -Root .
+
+      - name: Comment policy lint
+        run: |
+          ./scripts/ci/check-comments.ps1 -Root .
 
       - name: PSScriptAnalyzer
         run: |

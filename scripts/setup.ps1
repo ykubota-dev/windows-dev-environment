@@ -10,11 +10,11 @@ param(
 $ErrorActionPreference = 'Stop'
 
 $featureCatalog = [ordered]@{
-    F01 = @{ Name = 'Clipboard history'; Plan = 'Open Windows Settings and enable clipboard history manually.' }
-    F02 = @{ Name = 'PowerToys'; Plan = 'Check PowerToys availability and configure Run / FancyZones manually.' }
-    F03 = @{ Name = 'PowerShell / Git aliases'; Plan = 'Review planned profile and Git alias changes before a future implementation.' }
-    F04 = @{ Name = 'VS Code Settings Sync'; Plan = 'Enable Settings Sync in VS Code manually.' }
-    F05 = @{ Name = 'winget packages'; Plan = 'Review a future winget installation plan. No packages will be installed now.' }
+    F01 = @{ Name = 'クリップボード履歴'; Plan = 'Windowsの設定画面でクリップボード履歴を有効にします（現段階では手動操作）。' }
+    F02 = @{ Name = 'PowerToys'; Plan = 'PowerToysの導入状況を確認し、Run / FancyZonesを設定します（現段階では手動操作）。' }
+    F03 = @{ Name = 'PowerShell / Git エイリアス'; Plan = 'PowerShellプロファイルとGitエイリアスの変更予定を確認します。' }
+    F04 = @{ Name = 'VS Code 設定同期'; Plan = 'VS Codeの設定同期を有効にします（現段階では手動操作）。' }
+    F05 = @{ Name = 'winget パッケージ'; Plan = 'wingetによるパッケージ導入予定を確認します。現段階ではインストールしません。' }
 }
 
 function Resolve-FeatureSelection {
@@ -32,26 +32,26 @@ function Resolve-FeatureSelection {
     )
 
     if ($tokens.Count -eq 0 -or @($tokens | Where-Object { $_ -eq '' }).Count -gt 0) {
-        throw 'Select at least one valid feature ID.'
+        throw '有効な機能IDを1つ以上選択してください。'
     }
 
     if ($tokens -contains 'ALL') {
         if ($tokens.Count -ne 1) {
-            throw 'All cannot be combined with other feature IDs.'
+            throw 'Allと個別の機能IDは同時に指定できません。'
         }
         return @($Catalog.Keys)
     }
 
     $unknown = @($tokens | Where-Object { -not $Catalog.Contains($_) })
     if ($unknown.Count -gt 0) {
-        throw "Unknown feature ID(s): $($unknown -join ', ')"
+        throw "不明な機能ID: $($unknown -join ', ')"
     }
 
     return @($Catalog.Keys | Where-Object { $tokens -contains $_ })
 }
 
-Write-Host '=== Windows Development Environment Setup ==='
-Write-Host 'Controller preview: no Windows settings, files, or packages will be changed.'
+Write-Host '=== Windows開発環境セットアップ ==='
+Write-Host 'プレビュー版：Windowsの設定変更、ファイル変更、パッケージ導入は行いません。'
 Write-Host ''
 
 foreach ($id in $featureCatalog.Keys) {
@@ -61,52 +61,52 @@ Write-Host ''
 
 if (-not $Features -or $Features.Count -eq 0) {
     if ($DryRun) {
-        throw 'Specify -Features when using -DryRun (non-interactive mode).'
+        throw '-DryRunを使う場合は-Featuresで機能を指定してください。'
     }
-    $Features = @(Read-Host 'Select IDs (e.g. F01,F03), All, or Cancel')
+    $Features = @(Read-Host '機能IDを選択（例: F01,F03 / 全選択: All / 終了: Cancel）')
 }
 
 if ($Features.Count -eq 1 -and $Features[0].Trim() -match '^(?i:cancel)$') {
-    Write-Host 'Cancelled. No changes made.'
+    Write-Host '中止しました。変更は行っていません。'
     return
 }
 
 $selected = @(Resolve-FeatureSelection -Requested $Features -Catalog $featureCatalog)
 
-Write-Host '=== Planned operations ==='
+Write-Host '=== 実行予定の内容 ==='
 foreach ($id in $selected) {
     Write-Host ("[{0}] {1}" -f $id, $featureCatalog[$id].Name)
-    Write-Host ("  Plan: {0}" -f $featureCatalog[$id].Plan)
-    Write-Host '  State: Not implemented (preview only)'
+    Write-Host ("  予定: {0}" -f $featureCatalog[$id].Plan)
+    Write-Host '  状態: 未実装（プレビューのみ）'
 }
 Write-Host ''
 
 if ($DryRun) {
-    Write-Host 'DryRun complete. No changes made.'
+    Write-Host 'DryRunが完了しました。変更は行っていません。'
     return
 }
 
 $results = [System.Collections.Generic.List[object]]::new()
 foreach ($id in $selected) {
-    $decision = (Read-Host "[$id] Acknowledge plan? [Yes/Skip/Cancel]").Trim()
+    $decision = (Read-Host "[$id] 実行予定を確認しましたか？ [Yes: 確認 / Skip: スキップ / Cancel: 全体中止]").Trim()
     switch -Regex ($decision) {
         '^(?i:yes|y)$' {
             $results.Add([pscustomobject]@{
                     FeatureId = $id
                     Status = 'ManualRequired'
-                    Message = 'Feature application is not implemented; no changes made.'
+                    Message = '機能の適用処理は未実装です。変更は行っていません。'
                 })
             break
         }
         '^(?i:cancel|c)$' {
-            Write-Host 'Cancelled. Remaining features were not processed.'
+            Write-Host '中止しました。残りの機能は処理していません。'
             break
         }
         default {
             $results.Add([pscustomobject]@{
                     FeatureId = $id
                     Status = 'Skipped'
-                    Message = 'Not acknowledged; no changes made.'
+                    Message = '確認をスキップしました。変更は行っていません。'
                 })
         }
     }
@@ -116,8 +116,8 @@ foreach ($id in $selected) {
     }
 }
 
-Write-Host '=== Results ==='
+Write-Host '=== 確認結果 ==='
 foreach ($result in $results) {
     Write-Host ("{0}: {1} - {2}" -f $result.FeatureId, $result.Status, $result.Message)
 }
-Write-Host 'No changes made.'
+Write-Host '変更は行っていません。'

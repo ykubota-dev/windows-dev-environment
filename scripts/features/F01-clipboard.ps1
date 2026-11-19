@@ -34,7 +34,12 @@ function Invoke-F01ClipboardHistory {
         return [pscustomobject]@{ FeatureId = 'F01'; Status = 'Skipped'; Message = 'DryRun: 状態確認と案内のみを予定しています。' }
     }
 
-    $state = Get-F01ClipboardHistoryState
+    try {
+        $state = Get-F01ClipboardHistoryState
+    }
+    catch {
+        $state = 'Unknown'
+    }
     if ($state -eq 'Enabled') {
         Write-Host '[F01] クリップボード履歴は有効です。変更は不要です。'
         return [pscustomobject]@{ FeatureId = 'F01'; Status = 'Success'; Message = 'クリップボード履歴が有効であることを確認しました。' }

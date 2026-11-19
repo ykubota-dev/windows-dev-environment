@@ -13,6 +13,11 @@ $featureCatalog = [ordered]@{
         Plan = '現在状態を確認し、必要ならWindowsのGUI操作を案内します（自動変更なし）。'
         Script = 'F01-clipboard.ps1'
     }
+    F02 = @{
+        Name = 'Git Alias'
+        Plan = 'Git Aliasの既存設定を確認し、承認後に専用設定ファイルとinclude.pathを適用します。'
+        Script = 'F02-git-alias.ps1'
+    }
 }
 
 function Resolve-FeatureSelection {
@@ -61,7 +66,7 @@ if (-not $Features -or $Features.Count -eq 0) {
     if ($DryRun) {
         throw '-DryRunを使う場合は-Featuresで機能を指定してください。'
     }
-    $Features = @(Read-Host '機能IDを選択（例: F01 / 全選択: All / 終了: Cancel）')
+    $Features = @(Read-Host '機能IDを選択（例: F01,F02 / 全選択: All / 終了: Cancel）')
 }
 
 if ($Features.Count -eq 1 -and $Features[0].Trim() -match '^(?i:cancel)$') {

@@ -15,8 +15,8 @@
         $output | Should -Match '\[F01\]'
         $output | Should -Match '\[F02\]'
         $output | Should -Match '\[F03\]'
-        $matches = [regex]::Matches($output, '(?m)^\[(F0[1-3])\]')
-        @($matches | ForEach-Object { $_.Groups[1].Value }) -join ',' | Should -Be 'F01,F02,F03'
+        $featureMatches = [regex]::Matches($output, '(?m)^\[(F0[1-3])\]')
+        @($featureMatches | ForEach-Object { $_.Groups[1].Value }) -join ',' | Should -Be 'F01,F02,F03'
     }
 
     It 'rejects the next unimplemented feature ID' {

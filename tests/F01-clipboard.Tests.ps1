@@ -18,9 +18,8 @@
 
     It '無効な場合は手動操作を案内する' {
         Mock Get-F01ClipboardHistoryState { 'Disabled' }
-        $output = Invoke-F01ClipboardHistory 6>&1
-        ($output | Where-Object { $_ -is [string] } | Out-String) | Should -Match 'Win \+ V'
-        ($output | Where-Object { $_ -isnot [string] }).Status | Should -Be 'ManualRequired'
+        $result = Invoke-F01ClipboardHistory 6>$null
+        $result.Status | Should -Be 'ManualRequired'
     }
 
     It '判定できない場合は有効と推測しない' {

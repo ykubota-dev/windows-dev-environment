@@ -8,11 +8,11 @@ param(
 $ErrorActionPreference = 'Stop'
 
 $featureCatalog = [ordered]@{
-    F01 = @{ Name = 'クリップボード履歴'; Plan = '現在状態を確認し、必要ならWindowsのGUI操作を案内します（自動変更なし）。' }
-    F02 = @{ Name = 'PowerToys'; Plan = 'PowerToysの導入状況を確認し、Run / FancyZonesを設定します（現段階では手動操作）。' }
-    F03 = @{ Name = 'PowerShell / Git エイリアス'; Plan = 'PowerShellプロファイルとGitエイリアスの変更予定を確認します。' }
-    F04 = @{ Name = 'VS Code 設定同期'; Plan = 'VS Codeの設定同期を有効にします（現段階では手動操作）。' }
-    F05 = @{ Name = 'winget パッケージ'; Plan = 'wingetによるパッケージ導入予定を確認します。現段階ではインストールしません。' }
+    F01 = @{
+        Name = 'クリップボード履歴'
+        Plan = '現在状態を確認し、必要ならWindowsのGUI操作を案内します（自動変更なし）。'
+        Script = 'F01-clipboard.ps1'
+    }
 }
 
 function Resolve-FeatureSelection {
@@ -61,7 +61,7 @@ if (-not $Features -or $Features.Count -eq 0) {
     if ($DryRun) {
         throw '-DryRunを使う場合は-Featuresで機能を指定してください。'
     }
-    $Features = @(Read-Host '機能IDを選択（例: F01,F03 / 全選択: All / 終了: Cancel）')
+    $Features = @(Read-Host '機能IDを選択（例: F01 / 全選択: All / 終了: Cancel）')
 }
 
 if ($Features.Count -eq 1 -and $Features[0].Trim() -match '^(?i:cancel)$') {
@@ -75,8 +75,7 @@ Write-Host '=== 実行予定の内容 ==='
 foreach ($id in $selected) {
     Write-Host ("[{0}] {1}" -f $id, $featureCatalog[$id].Name)
     Write-Host ("  予定: {0}" -f $featureCatalog[$id].Plan)
-    if ($id -eq 'F01') { Write-Host '  状態: 状態確認・操作案内に対応' }
-    else { Write-Host '  状態: 未実装（プレビューのみ）' }
+    Write-Host '  状態: 実装済み'
 }
 Write-Host ''
 
@@ -90,25 +89,24 @@ foreach ($id in $selected) {
     $decision = (Read-Host "[$id] 実行予定を確認しましたか？ [Yes: 確認 / Skip: スキップ / Cancel: 全体中止]").Trim()
     switch -Regex ($decision) {
         '^(?i:yes|y)$' {
-            if ($id -eq 'F01') {
-                $featureScript = Join-Path $PSScriptRoot 'features/F01-clipboard.ps1'
-                try {
-                    $featureResult = & $featureScript
-                    $results.Add($featureResult)
+            $feature = $featureCatalog[$id]
+            $scriptPath = Join-Path (Join-Path $PSScriptRoot 'features') $feature.Script
+            try {
+                if (-not (Test-Path -LiteralPath $scriptPath -PathType Leaf)) {
+                    throw "機能スクリプトが存在しません: $scriptPath"
                 }
-                catch {
-                    $results.Add([pscustomobject]@{
-                            FeatureId = $id
-                            Status = 'Failed'
-                            Message = "F01の実行に失敗しました: $($_.Exception.Message)"
-                        })
+                $featureResult = & $scriptPath
+                if ($null -eq $featureResult -or $featureResult.FeatureId -ne $id -or
+                    $featureResult.Status -notin @('Success', 'Skipped', 'Failed', 'ManualRequired')) {
+                    throw "機能スクリプトから不正な結果が返されました: $id"
                 }
+                $results.Add($featureResult)
             }
-            else {
+            catch {
                 $results.Add([pscustomobject]@{
                         FeatureId = $id
-                        Status = 'ManualRequired'
-                        Message = '機能の適用処理は未実装です。変更は行っていません。'
+                        Status = 'Failed'
+                        Message = "$id の実行に失敗しました: $($_.Exception.Message)"
                     })
             }
             break

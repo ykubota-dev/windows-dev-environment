@@ -1,21 +1,29 @@
-﻿Describe 'Setup controller (preview only)' {
+﻿Describe 'Setup controller (registered features only)' {
     BeforeAll {
         $script:setupPath = Join-Path $PSScriptRoot '../scripts/setup.ps1'
     }
 
     It 'shows plans without changing the machine in DryRun mode' {
-        $output = & $script:setupPath -Features F01,F03 -DryRun 6>&1 | Out-String
+        $output = & $script:setupPath -Features F01 -DryRun 6>&1 | Out-String
         $output | Should -Match '\[F01\]'
-        $output | Should -Match '\[F03\]'
         $output | Should -Match 'DryRunが完了しました'
-        $output | Should -Not -Match '\[F02\].*Plan:'
+        $output | Should -Not -Match '\[F02\]'
     }
 
     It 'supports All in catalog order' {
         $output = & $script:setupPath -Features All -DryRun 6>&1 | Out-String
-        foreach ($id in @('F01', 'F02', 'F03', 'F04', 'F05')) {
-            $output | Should -Match ([regex]::Escape("[$id]"))
-        }
+        $output | Should -Match '\[F01\]'
+        $output | Should -Not -Match '\[F02\]'
+    }
+
+    It 'rejects reserved feature IDs that are not yet implemented' {
+        { & $script:setupPath -Features F02 -DryRun 6>&1 } | Should -Throw '*不明な機能ID*'
+    }
+
+    It 'shows only registered features in the selection menu' {
+        $output = & $script:setupPath -Features F01 -DryRun 6>&1 | Out-String
+        $output | Should -Match 'F01  クリップボード履歴'
+        $output | Should -Not -Match 'F02  '
     }
 
     It 'rejects unrecognized feature IDs' {

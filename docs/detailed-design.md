@@ -1,8 +1,8 @@
 # 詳細設計書
 
 - 文書ID：DETAIL-001
-- バージョン：0.3
-- 状態：F01・F02実装済み
+- バージョン：0.4
+- 状態：F01・F02実装済み、F03実装中
 
 ## 1. エントリーポイントとCLI
 
@@ -15,13 +15,13 @@
 | `.\scripts\setup.ps1 -Features All` | 現在登録されている全機能を選択 |
 | `.\scripts\setup.ps1 -Features F01 -DryRun` | 変更せず計画を表示 |
 | `.\scripts\setup.ps1 -Features F02 -DryRun` | Git Aliasの変更計画を表示 |
-| `.\scripts\setup.ps1 -Features F03 -DryRun` | 未登録IDとして拒否 |
+| `.\scripts\setup.ps1 -Features F03 -DryRun` | PowerShell 7 Profileの変更計画を表示 |
 
 機能IDは実装時に採番する。未実装機能のIDは予約しない。Git AliasとPowerShell Profileは独立した機能とする。
 
 ## 2. 機能カタログとモジュール構成
 
-`setup.ps1` の `$featureCatalog` に、機能IDをキーとして `Name`、`Plan`、`Script` を登録する。現在の登録対象はF01とF02。
+`setup.ps1` の `$featureCatalog` に、機能IDをキーとして `Name`、`Plan`、`Script` を登録する。現在の登録対象はF01・F02・F03。
 
 ```text
 scripts/
@@ -29,11 +29,13 @@ scripts/
   features/
     F01-clipboard.ps1
     F02-git-alias.ps1
+    F03-powershell-profile.ps1
   ci/
 tests/
   setup.Tests.ps1
   F01-clipboard.Tests.ps1
   F02-git-alias.Tests.ps1
+  F03-powershell-profile.Tests.ps1
 ```
 
 機能の追加時にスクリプトとメタデータを同時に登録する。機能ID別の実行分岐は作らない。IDが未登録なら実行せずエラーとする。登録されたスクリプトが存在しない場合は当該機能をFailedとし、他の機能を継続する。各スクリプトは `FeatureId`、`Status`、`Message` を返す。実行先は信頼できる固定カタログからのみ取得する。
@@ -92,8 +94,10 @@ Win + VまたはWindows設定の操作案内。現在状態を正しく検出で
 ### F02 Git Alias（実装済み）
 `st` / `co` / `br` / `lg` を専用ファイルに定義し、`include.path` で読み込む。既存の同名Aliasがある場合は競合として適用しない。DryRun、承認後のバックアップ、状態の再確認、冪等性に対応する。Gitがない場合はFailedを返す。
 
+### F03 PowerShell Profile（PowerShell 7専用）
+`$PROFILE.CurrentUserCurrentHost` に管理対象ブロックを追加し、ユーザー領域の `~/.config/windows-dev-environment/powershell/` に8関数を配置する。対象関数は `croot`、`mkcd`、`ports`、`reload-profile`、`which`、`findtext`、`touch`、`gbranch`。`gbranch` はローカルブランチの番号選択方式とし、強制切替は行わない。DryRun、承認、バックアップ、再実行時の冪等性に対応する。
+
 ### 未実装機能（ID未採番）
-PowerShell Profileは管理対象ブロックだけを追加・更新し、重複を防ぐ。両機能は独立して実装・選択できるようにする。
 
 PowerToys、VS Code Settings Sync、wingetアプリ管理、AutoHotkey、Everythingも未採番とする。具体的な適用方式は各機能の実装PRで定義する。
 
@@ -123,8 +127,8 @@ PowerToys、VS Code Settings Sync、wingetアプリ管理、AutoHotkey、Everyth
 | ID | テスト | 期待 |
 | --- | --- | --- |
 | T01 | F01のDryRun | 書き込みなし・計画表示 |
-| T02 | All | 登録済みのF01・F02を選択 |
-| T03 | 未登録ID（F03など） | 入力エラー |
+| T02 | All | 登録済みのF01・F02・F03を選択 |
+| T03 | 未登録ID（F04など） | 入力エラー |
 | T04 | 不明なFeature ID | 入力エラー |
 | T05 | Allと個別IDの混在 | 入力エラー |
 | T06 | Enterのみの承認 | 適用されない |

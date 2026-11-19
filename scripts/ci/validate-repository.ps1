@@ -16,7 +16,7 @@ $sourceFiles = @(
     Get-ChildItem -LiteralPath $repositoryRoot -Recurse -File |
         Where-Object {
             $_.Extension -in @('.ps1', '.psm1', '.psd1', '.json') -and
-            $_.FullName -notmatch '[\\/](\\.git|\\.backups|backups|logs)[\\/]'
+            $_.FullName -notmatch '[\\/](\.git|\.backups|backups|logs)[\\/]'
         }
 )
 

@@ -15,6 +15,8 @@
         $output | Should -Match '\[F01\]'
         $output | Should -Match '\[F02\]'
         $output | Should -Match '\[F03\]'
+        $matches = [regex]::Matches($output, '(?m)^\[(F0[1-3])\]')
+        @($matches | ForEach-Object { $_.Groups[1].Value }) -join ',' | Should -Be 'F01,F02,F03'
     }
 
     It 'rejects the next unimplemented feature ID' {
@@ -26,6 +28,8 @@
         $output | Should -Match 'F01  クリップボード履歴'
         $output | Should -Match 'F02  Git Alias'
         $output | Should -Match 'F03  PowerShell Profile'
+        $menu = [regex]::Matches($output, '(?m)^(F0[1-3])  ')
+        @($menu | ForEach-Object { $_.Groups[1].Value }) -join ',' | Should -Be 'F01,F02,F03'
     }
 
     It 'rejects unrecognized feature IDs' {

@@ -1,6 +1,4 @@
-﻿# Terminal-facing prompts are intentionally written to the host, not the success pipeline.
-# Keep this suppression local to the interactive setup entry point.
-[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '', Justification = 'Interactive terminal UI intentionally writes prompts and status messages to the host.')]
+﻿[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '', Justification = 'Interactive terminal UI intentionally writes prompts and status messages to the host.')]
 [CmdletBinding()]
 param(
     [string[]]$Features,

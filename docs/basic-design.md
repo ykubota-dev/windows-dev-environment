@@ -15,8 +15,9 @@
 | ID | 機能 | 現在の状態 | 適用方式 |
 | --- | --- | --- | --- |
 | F01 | クリップボード履歴 | 実装済み | 状態確認とGUI操作案内 |
+| F02 | Git Alias | 実装済み | 専用設定ファイルをinclude.pathで読み込み |
 
-未実装の機能候補：Git Alias、PowerShell Profile、PowerToys、VS Code Settings Sync、wingetアプリ管理、AutoHotkey、Everything。未実装機能にはIDを予約しない。機能の実装時に次の連番を割り当て、既存IDは原則変更しない。Git AliasとPowerShell Profileは独立した設定対象として分ける。
+未実装の機能候補：PowerShell Profile、PowerToys、VS Code Settings Sync、wingetアプリ管理、AutoHotkey、Everything。未実装機能にはIDを予約しない。機能の実装時に次の連番を割り当て、既存IDは原則変更しない。Git AliasとPowerShell Profileは独立した設定対象として分ける。
 
 Microsoft IME辞書は別リポジトリで管理する。Windows以外のOS、秘密情報の同期、既存アプリの強制更新・削除は対象外。
 
@@ -27,7 +28,8 @@ scripts/setup.ps1
     ├─ 登録済み機能の選択と承認
     ├─ メタデータ（Name / Plan / Script）
     └─ scripts/features/
-         └─ F01-clipboard.ps1
+         ├─ F01-clipboard.ps1
+         └─ F02-git-alias.ps1
 ```
 
 機能追加時は機能スクリプトを作成し、`setup.ps1` の機能カタログへ登録する。実行先をID別のswitch文で増やさず、登録されたScriptから解決する。実行前に登録IDとファイル存在を確認する。差分表示・バックアップ等は今後の設定変更機能で導入する。

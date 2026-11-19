@@ -1,4 +1,3 @@
-# Validate PowerShell parser errors and JSON formatting without modifying files.
 [CmdletBinding()]
 param(
     [Parameter()]

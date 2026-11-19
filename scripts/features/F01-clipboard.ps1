@@ -1,5 +1,4 @@
-﻿# F01: Windows のクリップボード履歴を読み取り、必要な GUI 操作を案内する。
-[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '', Justification = '対話型CLIの案内を成功パイプラインと分離するため。')]
+﻿[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '', Justification = '対話型CLIの案内を成功パイプラインと分離するため。')]
 [CmdletBinding()]
 param([switch]$DryRun)
 
@@ -12,7 +11,7 @@ function Get-F01ClipboardHistoryState {
     }
 
     try {
-        # WinRT API は Windows / PowerShell の組み合わせにより利用できない場合がある。
+
         $clipboardType = [Windows.ApplicationModel.DataTransfer.Clipboard, Windows.ApplicationModel.DataTransfer, ContentType=WindowsRuntime]
         if ($clipboardType::IsHistoryEnabled()) {
             return 'Enabled'

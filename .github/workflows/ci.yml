@@ -41,6 +41,10 @@ jobs:
         run: |
           ./scripts/ci/validate-repository.ps1 -Root .
 
+      - name: Comment policy lint
+        run: |
+          ./scripts/ci/check-comments.ps1 -Root .
+
       - name: PSScriptAnalyzer
         run: |
           $ErrorActionPreference = 'Stop'

@@ -16,8 +16,9 @@ Windows開発環境向けPowerShellコードを追加する前に、Pull Request
 
 1. PowerShell 7上でPSScriptAnalyzer 1.25.0 / Pester 5.9.0を導入
 2. PowerShell (`.ps1`, `.psm1`, `.psd1`) の構文検証、および `.json` の解析
-3. PSScriptAnalyzerによる `scripts/` と `tests/` のError/Warningチェック
-4. Pesterによる `tests/*.Tests.ps1` の単体テスト
+3. コメント禁止Lintによる `scripts/` と `tests/` のチェック
+4. PSScriptAnalyzerによる `scripts/` と `tests/` のError/Warningチェック
+5. Pesterによる `tests/*.Tests.ps1` の単体テスト
 
 構文チェックは `scripts/ci/validate-repository.ps1` が実施する。構文・JSONが不正な場合にゼロ以外の終了コードで失敗し、CI全体も失敗する。
 
@@ -32,6 +33,7 @@ Install-Module PSScriptAnalyzer -RequiredVersion 1.25.0 -Scope CurrentUser -Forc
 Install-Module Pester -RequiredVersion 5.9.0 -Scope CurrentUser -Force -SkipPublisherCheck
 
 .\scripts\ci\validate-repository.ps1 -Root .
+.\scripts\ci\check-comments.ps1 -Root .
 Invoke-ScriptAnalyzer -Path .\scripts -Recurse -Severity Error,Warning
 Invoke-ScriptAnalyzer -Path .\tests -Recurse -Severity Error,Warning
 Invoke-Pester -Path .\tests -CI

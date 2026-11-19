@@ -14,7 +14,7 @@ Describe 'Setup controller (preview only)' {
     It 'supports All in catalog order' {
         $output = & $script:setupPath -Features All -DryRun 6>&1 | Out-String
         foreach ($id in @('F01', 'F02', 'F03', 'F04', 'F05')) {
-            $output | Should -Match "[regex]::Escape("[$id]")
+            $output | Should -Match ([regex]::Escape("[$id]"))
         }
     }
 
